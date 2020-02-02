@@ -103,11 +103,13 @@ std::pair<int,int> FindRoadLines(const std::vector<Vec4i>& aLines, int aWidht, i
             return lh > rh;
         return lh < rh;
     };
-    auto it = std::max_element(bottomCrosses.cbegin(), bottomCrosses.cend(), comp);
-    auto li = it - bottomCrosses.cbegin();
-    it = std::min_element(bottomCrosses.cbegin(), bottomCrosses.cend(), comp);
-    auto ri = it - bottomCrosses.cbegin();
+    auto it1 = std::max_element(bottomCrosses.cbegin(), bottomCrosses.cend(), comp);
+    auto li = it1 - bottomCrosses.cbegin();
+    auto it2 = std::min_element(bottomCrosses.cbegin(), bottomCrosses.cend(), comp);
+    auto ri = it2 - bottomCrosses.cbegin();
 
+    if (it1 == bottomCrosses.cend() || it2 == bottomCrosses.cend())
+        return {-1, -1};
     return {li, ri};
 }
 
@@ -234,6 +236,11 @@ int main(int argc, char** argv)
     int li, ri;
     auto w = image.size().width, h = image.size().height;
     std::tie(li, ri) = FindRoadLines(lines, w, h);
+    if (li == -1 || ri == -1)
+    {
+        std::cout << "Can't find road lines." << std::endl;
+        return -1;
+    }
 
     const Vec4i line34 {0, (int)(h*0.75), w, (int)(h*0.75)};
     Point l34cross, r34cross;
