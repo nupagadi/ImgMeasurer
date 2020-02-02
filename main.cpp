@@ -99,7 +99,7 @@ std::pair<int,int> FindRoadLines(const std::vector<Vec4i>& aLines, int aWidht, i
 
     auto comp = [hw = aWidht/2](auto lh, auto rh)
     {
-        if (lh > hw/2 && rh < hw/2 || lh < hw/2 && rh > hw/2)
+        if (lh > hw && rh < hw || lh < hw && rh > hw)
             return lh > rh;
         return lh < rh;
     };
@@ -180,9 +180,27 @@ void PrintConfig(const Config& aConfig)
 
     std::cout << "Determine distance between ("
         << aConfig.Point1.first << ", " << aConfig.Point1.second << ") and ("
-        << aConfig.Point1.first << ", " << aConfig.Point1.second << ")" << std::endl;
+        << aConfig.Point2.first << ", " << aConfig.Point2.second << ")" << std::endl;
     std::cout << "Road pic: " << aConfig.FileName << std::endl;
     std::cout << "Lane width: " << aConfig.LaneWidth << " meters" << std::endl << std::endl;
+}
+
+float CalcDistance(const Mat& aHomography,
+        const Point2f& aBase1, const Point2f& aBase2, float aLaneWidth,
+        const Point2f& aPoint1, const Point2f& aPoint2)
+{
+    std::vector<Point2f> src, dst(4);
+    src.push_back(aBase1);
+    src.push_back(aBase2);
+    src.push_back(aPoint1);
+    src.push_back(aPoint2);
+
+    perspectiveTransform(src, dst, aHomography);
+
+    for (auto p : dst)
+        std::cout << p << std::endl;
+
+    return fabs(dst[2].x - dst[3].x) / fabs(dst[0].x - dst[1].x) * aLaneWidth;
 }
 
 int main(int argc, char** argv)
@@ -194,12 +212,6 @@ int main(int argc, char** argv)
     {
         return -1;
     }
-
-    //String imageName("/home/ilya/Pic/road1.png");
-    //if (!args.empty())
-    //{
-    //    imageName = args[0];
-    //}
 
     Mat image;
     image = imread(samples::findFile(config.FileName), IMREAD_COLOR);
@@ -247,8 +259,13 @@ int main(int argc, char** argv)
 
     Mat homo = findHomography(ptsSrc, ptsDst);
 
+    Point2f p1(config.Point1.first, config.Point1.second);
+    Point2f p2(config.Point2.first, config.Point2.second);
+    auto distance = CalcDistance(homo, ptsSrc[0], ptsSrc[2], config.LaneWidth, p1, p2);
+    std::cout << "D " << distance << std::endl;
+
     Mat warped;
-    warpPerspective(image, warped, homo, image.size());
+    warpPerspective(image, warped, homo, Size(image.size().width, image.size().height));
 
     namedWindow("Display window", WINDOW_NORMAL);
     namedWindow("Display window2", WINDOW_NORMAL);
