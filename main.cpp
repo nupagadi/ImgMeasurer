@@ -111,16 +111,98 @@ std::pair<int,int> FindRoadLines(const std::vector<Vec4i>& aLines, int aWidht, i
     return {li, ri};
 }
 
-int main(int argc, char** argv)
+struct Config
 {
-    String imageName("/home/ilya/Pic/road1.png");
-    if (argc > 1)
+    enum Mode {Error, Normal, Debug};
+
+    Config::Mode Mode;
+    std::string FileName;
+    float LaneWidth;
+    std::pair<int,int> Point1, Point2;
+
+    operator bool() const
     {
-        imageName = argv[1];
+        return Mode != Error;
+    }
+};
+
+Config MakeConfig(const std::vector<std::string>& aArgs)
+{
+    auto args = aArgs;
+    Config cfg;
+    cfg.Mode = Config::Error;
+
+    if (args.size() < 10)
+        return cfg;
+
+    auto it = std::find(args.cbegin(), args.cend(), "--file");
+    if (it == args.cend() || ++it == args.cend())
+        return cfg;
+    cfg.FileName = *it;
+
+    it = std::find(args.cbegin(), args.cend(), "--lane");
+    if (it == args.cend() || ++it == args.cend())
+        return cfg;
+    cfg.LaneWidth = std::stof(*it);
+
+    it = std::find(args.cbegin(), args.cend(), "--point1");
+    if (it == args.cend() || it+2 == args.cend())
+        return cfg;
+    cfg.Point1.first = std::stoi(*++it);
+    cfg.Point1.second = std::stoi(*++it);
+
+    it = std::find(args.cbegin(), args.cend(), "--point2");
+    if (it == args.cend() || it+2 == args.cend())
+        return cfg;
+    cfg.Point2.first = std::stoi(*++it);
+    cfg.Point2.second = std::stoi(*++it);
+
+    cfg.Mode = Config::Normal;
+
+    return cfg;
+}
+
+void PrintHelp()
+{
+    std::cout << "Usage:\n";
+    std::cout << "./ImgMeasurer --file /path/to/file.png --lane 3.75 "
+       << "--point1 <x> <y> --point2 <x> <y>" << std::endl;
+}
+
+void PrintConfig(const Config& aConfig)
+{
+    if (!aConfig)
+    {
+        std::cout << "Invalid config" << std::endl;
+        PrintHelp();
+        return;
     }
 
+    std::cout << "Determine distance between ("
+        << aConfig.Point1.first << ", " << aConfig.Point1.second << ") and ("
+        << aConfig.Point1.first << ", " << aConfig.Point1.second << ")" << std::endl;
+    std::cout << "Road pic: " << aConfig.FileName << std::endl;
+    std::cout << "Lane width: " << aConfig.LaneWidth << " meters" << std::endl << std::endl;
+}
+
+int main(int argc, char** argv)
+{
+    std::vector<std::string> args(argv+1, argv+argc);
+    auto config = MakeConfig(args);
+    PrintConfig(config);
+    if (!config)
+    {
+        return -1;
+    }
+
+    //String imageName("/home/ilya/Pic/road1.png");
+    //if (!args.empty())
+    //{
+    //    imageName = args[0];
+    //}
+
     Mat image;
-    image = imread(samples::findFile(imageName), IMREAD_COLOR);
+    image = imread(samples::findFile(config.FileName), IMREAD_COLOR);
     if (image.empty())
     {
         std::cout << "Could not open or find the image" << std::endl;
