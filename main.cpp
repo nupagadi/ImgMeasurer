@@ -66,12 +66,12 @@ std::vector<Vec4i> ExcludeLinesByTangent(const std::vector<Vec4i>& aHoughLines, 
         double a = (aHoughLines[i][1] - aHoughLines[i][3]),
                b = (aHoughLines[i][0] - aHoughLines[i][2]);
 
+        std::cout << "tangent " << a/b << std::endl;
         if (a-b == a || a-b == -b)
             continue;
         if (fabs(a/b) < aMinTg || aMaxTg < fabs(a/b))
             continue;
         result.push_back(aHoughLines[i]);
-        std::cout << "a/b " << a/b << std::endl;
 
         if (aLinesOnly)
         {
@@ -227,7 +227,7 @@ int main(int argc, char** argv)
     auto withEdges = BuildEdges(roi, 3, 66, 200);
 
     std::vector<Vec4i> houghLines;
-    HoughLinesP(withEdges, houghLines, 5, 2*CV_PI/180, 300, 500, 200);
+    HoughLinesP(withEdges, houghLines, 5, 1*CV_PI/180, 100, 300, 100);
     std::cout << "hough lines.size() " << houghLines.size() << std::endl;
 
     auto linesOnly = Mat(image.size(), image.type(), Scalar::all(0));
