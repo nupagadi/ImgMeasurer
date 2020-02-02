@@ -111,6 +111,24 @@ std::pair<int,int> FindRoadLines(const std::vector<Vec4i>& aLines, int aWidht, i
     return {li, ri};
 }
 
+float CalcDistance(const Mat& aHomography,
+        const Point2f& aBase1, const Point2f& aBase2, float aLaneWidth,
+        const Point2f& aPoint1, const Point2f& aPoint2)
+{
+    std::vector<Point2f> src, dst(4);
+    src.push_back(aBase1);
+    src.push_back(aBase2);
+    src.push_back(aPoint1);
+    src.push_back(aPoint2);
+
+    perspectiveTransform(src, dst, aHomography);
+
+    for (auto p : dst)
+        std::cout << p << std::endl;
+
+    return fabs(dst[2].x - dst[3].x) / fabs(dst[0].x - dst[1].x) * aLaneWidth;
+}
+
 struct Config
 {
     enum Mode {Error, Normal, Debug};
@@ -183,24 +201,6 @@ void PrintConfig(const Config& aConfig)
         << aConfig.Point2.first << ", " << aConfig.Point2.second << ")" << std::endl;
     std::cout << "Road pic: " << aConfig.FileName << std::endl;
     std::cout << "Lane width: " << aConfig.LaneWidth << " meters" << std::endl << std::endl;
-}
-
-float CalcDistance(const Mat& aHomography,
-        const Point2f& aBase1, const Point2f& aBase2, float aLaneWidth,
-        const Point2f& aPoint1, const Point2f& aPoint2)
-{
-    std::vector<Point2f> src, dst(4);
-    src.push_back(aBase1);
-    src.push_back(aBase2);
-    src.push_back(aPoint1);
-    src.push_back(aPoint2);
-
-    perspectiveTransform(src, dst, aHomography);
-
-    for (auto p : dst)
-        std::cout << p << std::endl;
-
-    return fabs(dst[2].x - dst[3].x) / fabs(dst[0].x - dst[1].x) * aLaneWidth;
 }
 
 int main(int argc, char** argv)
