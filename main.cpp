@@ -219,7 +219,13 @@ int main(int argc, char** argv)
     }
 
     Mat image;
-    image = imread(samples::findFile(config.FileName), IMREAD_COLOR);
+    try {
+        image = imread(samples::findFile(config.FileName), IMREAD_COLOR);
+    }
+    catch (cv::Exception e)
+    {
+        std::cout << e.what() << std::endl;
+    }
     if (image.empty())
     {
         std::cout << "Could not open or find the image" << std::endl;
