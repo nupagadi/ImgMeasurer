@@ -71,7 +71,8 @@ Config MakeConfig(const std::vector<std::string>& aArgs)
     cfg.Point2.first = std::stoi(*++it);
     cfg.Point2.second = std::stoi(*++it);
 
-    cfg.Mode = Config::Normal;
+    if (!cfg)
+        cfg.Mode = Config::Normal;
 
     return cfg;
 }

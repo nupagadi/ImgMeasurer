@@ -95,7 +95,9 @@ std::vector<Vec4i> ImageMeasurer::Impl::ExcludeLinesByTangent(
         double a = (aHoughLines[i][1] - aHoughLines[i][3]),
                b = (aHoughLines[i][0] - aHoughLines[i][2]);
 
-        std::cout << "tangent " << a/b << std::endl;
+        if (mIsDebug)
+            std::cout << "tangent " << a/b << std::endl;
+
         if (a-b == a || a-b == -b)
             continue;
         if (fabs(a/b) < aMinTg || aMaxTg < fabs(a/b))
@@ -124,7 +126,8 @@ std::pair<int,int> ImageMeasurer::Impl::FindRoadLines(
         if (!LinesCrossPoint(l, bottomLine, &cross))
             throw std::runtime_error("LinesCrossPoint: lines are parallel.");
         bottomCrosses.push_back(cross.x);
-        std::cout << "bottom cross " << cross << std::endl;
+        if (mIsDebug)
+            std::cout << "bottom cross " << cross << std::endl;
     }
 
     auto comp = [hw = aWidht/2](auto lh, auto rh)
@@ -158,8 +161,9 @@ float ImageMeasurer::Impl::CalcDistance(const Mat& aHomography,
 
     perspectiveTransform(src, dst, aHomography);
 
-    for (auto p : dst)
-        std::cout << p << std::endl;
+    if (mIsDebug)
+        for (auto p : dst)
+            std::cout << p << std::endl;
 
     return fabs(dst[2].x - dst[3].x) / fabs(dst[0].x - dst[1].x) * aLaneWidth;
 }
@@ -184,13 +188,17 @@ float ImageMeasurer::Calc(const std::string& aFileName, float aLaneWidth,
     auto roi = mImpl->MakeRoi(image);
     auto withEdges = mImpl->BuildEdges(roi, 3, 66, 150);
 
-    namedWindow("Edges", WINDOW_NORMAL);
-    imshow("Edges", withEdges);
-    waitKey(0);
+    if (mImpl->mIsDebug && mImpl->mIsGuiDebug)
+    {
+        namedWindow("Edges", WINDOW_NORMAL);
+        imshow("Edges", withEdges);
+        waitKey(0);
+    }
 
     std::vector<Vec4i> houghLines;
     HoughLinesP(withEdges, houghLines, 5, 1*CV_PI/180, 100, 300, 100);
-    std::cout << "hough lines.size() " << houghLines.size() << std::endl;
+    if (mImpl->mIsDebug)
+        std::cout << "hough lines.size() " << houghLines.size() << std::endl;
 
     auto linesOnly = Mat(image.size(), image.type(), Scalar::all(0));
     auto lines = mImpl->ExcludeLinesByTangent(houghLines, 1, 3, &linesOnly);
@@ -204,9 +212,12 @@ float ImageMeasurer::Calc(const std::string& aFileName, float aLaneWidth,
         throw std::exception{};
     }
 
-    namedWindow("Lines", WINDOW_NORMAL);
-    imshow("Lines", linesOnly);
-    waitKey(0);
+    if (mImpl->mIsDebug && mImpl->mIsGuiDebug)
+    {
+        namedWindow("Lines", WINDOW_NORMAL);
+        imshow("Lines", linesOnly);
+        waitKey(0);
+    }
 
     const Vec4i line34 {0, (int)(h*0.75), w, (int)(h*0.75)};
     Point l34cross, r34cross;
@@ -230,10 +241,13 @@ float ImageMeasurer::Calc(const std::string& aFileName, float aLaneWidth,
     ptsDst.emplace_back(r34cross.x, h);
     ptsDst.emplace_back(r34cross.x, r34cross.y);
 
-    std::cout << "ptsSrc\n";
-    for (auto e : ptsSrc)
-        std::cout << " " << e;
-    std::cout << std::endl;
+    if (mImpl->mIsDebug)
+    {
+        std::cout << "ptsSrc\n";
+        for (auto e : ptsSrc)
+            std::cout << " " << e;
+        std::cout << std::endl;
+    }
     Mat homo = findHomography(ptsSrc, ptsDst);
 
     Point2f p1(aPoint1x, aPoint1y);
@@ -243,9 +257,12 @@ float ImageMeasurer::Calc(const std::string& aFileName, float aLaneWidth,
     Mat warped;
     warpPerspective(image, warped, homo, image.size());
 
-    namedWindow("Warped", WINDOW_NORMAL);
-    imshow("Warped", warped);
-    waitKey(0);
+    if (mImpl->mIsDebug && mImpl->mIsGuiDebug)
+    {
+        namedWindow("Warped", WINDOW_NORMAL);
+        imshow("Warped", warped);
+        waitKey(0);
+    }
 
     return distance;
 }
