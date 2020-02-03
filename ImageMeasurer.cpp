@@ -14,10 +14,20 @@ struct ImageMeasurer::Impl
     bool mIsDebug = false;
     bool mIsGuiDebug = false;
 
+    static bool LinesCrossPoint(const Vec4i& aLine1, const Vec4i& aLine2, Point* aCross);
+
+    Mat MakeRoi(const Mat& aOrig);
+
+    Mat BuildEdges(Mat& aOrig, int aBlurKernel, int aCannyThres1, int aCannyThres2);
+
+    std::vector<Vec4i> ExcludeLinesByTangent(
+            const std::vector<Vec4i>& aHoughLines, float aMinTg, float aMaxTg, Mat* aLinesOnly);
+
+    std::pair<int,int> FindRoadLines(const std::vector<Vec4i>& aLines, int aWidht, int aHeight);
+
     float CalcDistance(const Mat& aHomography,
             const Point2f& aBase1, const Point2f& aBase2, float aLaneWidth,
             const Point2f& aPoint1, const Point2f& aPoint2);
-
 };
 
 ImageMeasurer::ImageMeasurer()
@@ -27,7 +37,7 @@ ImageMeasurer::ImageMeasurer()
 
 ImageMeasurer::~ImageMeasurer() = default;
 
-bool LinesCrossPoint(const Vec4i& aLine1, const Vec4i& aLine2, Point* aCross)
+bool ImageMeasurer::Impl::LinesCrossPoint(const Vec4i& aLine1, const Vec4i& aLine2, Point* aCross)
 {
     Point2f x  { (float)(aLine2[0] - aLine1[0]), (float)(aLine2[1] - aLine1[1]) };
     Point2f d1 { (float)(aLine1[2] - aLine1[0]), (float)(aLine1[3] - aLine1[1]) };
@@ -43,7 +53,7 @@ bool LinesCrossPoint(const Vec4i& aLine1, const Vec4i& aLine2, Point* aCross)
     return true;
 }
 
-Mat MakeRoi(const Mat& aOrig)
+Mat ImageMeasurer::Impl::MakeRoi(const Mat& aOrig)
 {
     auto roi = Mat(aOrig.size(), aOrig.type(), Scalar::all(0));
     auto mask = Mat(aOrig.size(), CV_8UC1, Scalar(0));
@@ -61,7 +71,8 @@ Mat MakeRoi(const Mat& aOrig)
     return roi;
 }
 
-Mat BuildEdges(Mat& aOrig, int aBlurKernel, int aCannyThres1, int aCannyThres2)
+Mat ImageMeasurer::Impl::BuildEdges(
+        Mat& aOrig, int aBlurKernel, int aCannyThres1, int aCannyThres2)
 {
     cvtColor(aOrig, aOrig, COLOR_BGR2GRAY);
     Mat edges;
@@ -74,7 +85,8 @@ Mat BuildEdges(Mat& aOrig, int aBlurKernel, int aCannyThres1, int aCannyThres2)
     return withEdges;
 }
 
-std::vector<Vec4i> ExcludeLinesByTangent(const std::vector<Vec4i>& aHoughLines, float aMinTg, float aMaxTg, Mat* aLinesOnly)
+std::vector<Vec4i> ImageMeasurer::Impl::ExcludeLinesByTangent(
+        const std::vector<Vec4i>& aHoughLines, float aMinTg, float aMaxTg, Mat* aLinesOnly)
 {
     std::vector<Vec4i> result;
 
@@ -101,7 +113,8 @@ std::vector<Vec4i> ExcludeLinesByTangent(const std::vector<Vec4i>& aHoughLines, 
     return std::move(result);
 }
 
-std::pair<int,int> FindRoadLines(const std::vector<Vec4i>& aLines, int aWidht, int aHeight)
+std::pair<int,int> ImageMeasurer::Impl::FindRoadLines(
+        const std::vector<Vec4i>& aLines, int aWidht, int aHeight)
 {
     std::vector<int> bottomCrosses;
     const Vec4i bottomLine {0, aHeight, aWidht, aHeight};
@@ -133,7 +146,7 @@ std::pair<int,int> FindRoadLines(const std::vector<Vec4i>& aLines, int aWidht, i
     return {li, ri};
 }
 
-float CalcDistance(const Mat& aHomography,
+float ImageMeasurer::Impl::CalcDistance(const Mat& aHomography,
         const Point2f& aBase1, const Point2f& aBase2, float aLaneWidth,
         const Point2f& aPoint1, const Point2f& aPoint2)
 {
@@ -168,8 +181,8 @@ float ImageMeasurer::Calc(const std::string& aFileName, float aLaneWidth,
         throw std::exception{};
     }
 
-    auto roi = MakeRoi(image);
-    auto withEdges = BuildEdges(roi, 3, 66, 150);
+    auto roi = mImpl->MakeRoi(image);
+    auto withEdges = mImpl->BuildEdges(roi, 3, 66, 150);
 
     namedWindow("Edges", WINDOW_NORMAL);
     imshow("Edges", withEdges);
@@ -180,11 +193,11 @@ float ImageMeasurer::Calc(const std::string& aFileName, float aLaneWidth,
     std::cout << "hough lines.size() " << houghLines.size() << std::endl;
 
     auto linesOnly = Mat(image.size(), image.type(), Scalar::all(0));
-    auto lines = ExcludeLinesByTangent(houghLines, 1, 3, &linesOnly);
+    auto lines = mImpl->ExcludeLinesByTangent(houghLines, 1, 3, &linesOnly);
 
     int li, ri;
     auto w = image.size().width, h = image.size().height;
-    std::tie(li, ri) = FindRoadLines(lines, w, h);
+    std::tie(li, ri) = mImpl->FindRoadLines(lines, w, h);
     if (li == -1 || ri == -1)
     {
         std::cout << "Can't find road lines." << std::endl;
@@ -197,13 +210,13 @@ float ImageMeasurer::Calc(const std::string& aFileName, float aLaneWidth,
 
     const Vec4i line34 {0, (int)(h*0.75), w, (int)(h*0.75)};
     Point l34cross, r34cross;
-    LinesCrossPoint(lines[li], line34, &l34cross);
-    LinesCrossPoint(lines[ri], line34, &r34cross);
+    Impl::LinesCrossPoint(lines[li], line34, &l34cross);
+    Impl::LinesCrossPoint(lines[ri], line34, &r34cross);
 
     const Vec4i bottomLine {0, h, w, h};
     Point lBottomCross, rBottomCross;
-    LinesCrossPoint(lines[li], bottomLine, &lBottomCross);
-    LinesCrossPoint(lines[ri], bottomLine, &rBottomCross);
+    Impl::LinesCrossPoint(lines[li], bottomLine, &lBottomCross);
+    Impl::LinesCrossPoint(lines[ri], bottomLine, &rBottomCross);
 
     std::vector<Point2f> ptsSrc, ptsDst;
 
@@ -225,7 +238,7 @@ float ImageMeasurer::Calc(const std::string& aFileName, float aLaneWidth,
 
     Point2f p1(aPoint1x, aPoint1y);
     Point2f p2(aPoint2x, aPoint2y);
-    auto distance = CalcDistance(homo, ptsSrc[1], ptsSrc[3], aLaneWidth, p1, p2);
+    auto distance = mImpl->CalcDistance(homo, ptsSrc[1], ptsSrc[3], aLaneWidth, p1, p2);
 
     Mat warped;
     warpPerspective(image, warped, homo, image.size());
