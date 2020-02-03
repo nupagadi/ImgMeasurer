@@ -108,8 +108,11 @@ std::pair<int,int> FindRoadLines(const std::vector<Vec4i>& aLines, int aWidht, i
     auto it2 = std::min_element(bottomCrosses.cbegin(), bottomCrosses.cend(), comp);
     auto ri = it2 - bottomCrosses.cbegin();
 
-    if (it1 == bottomCrosses.cend() || it2 == bottomCrosses.cend())
+    if (it1 == bottomCrosses.cend() || it2 == bottomCrosses.cend()
+        || bottomCrosses[li] > aWidht/2 || bottomCrosses[ri] < aWidht/2)
+    {
         return {-1, -1};
+    }
     return {li, ri};
 }
 
