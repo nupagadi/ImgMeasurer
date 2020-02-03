@@ -9,6 +9,24 @@
 
 using namespace cv;
 
+struct ImageMeasurer::Impl
+{
+    bool mIsDebug = false;
+    bool mIsGuiDebug = false;
+
+    float CalcDistance(const Mat& aHomography,
+            const Point2f& aBase1, const Point2f& aBase2, float aLaneWidth,
+            const Point2f& aPoint1, const Point2f& aPoint2);
+
+};
+
+ImageMeasurer::ImageMeasurer()
+    : mImpl(std::make_unique<ImageMeasurer::Impl>())
+{
+}
+
+ImageMeasurer::~ImageMeasurer() = default;
+
 bool LinesCrossPoint(const Vec4i& aLine1, const Vec4i& aLine2, Point* aCross)
 {
     Point2f x  { (float)(aLine2[0] - aLine1[0]), (float)(aLine2[1] - aLine1[1]) };
@@ -221,7 +239,7 @@ float ImageMeasurer::Calc(const std::string& aFileName, float aLaneWidth,
 
 void ImageMeasurer::SetDebug(bool aIsGui)
 {
-    mIsDebug = true;
-    mIsGuiDebug = aIsGui;
+    mImpl->mIsDebug = true;
+    mImpl->mIsGuiDebug = aIsGui;
 }
 

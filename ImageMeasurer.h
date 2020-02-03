@@ -1,18 +1,21 @@
 #include <string>
+#include <memory>
 
 class ImageMeasurer
 {
 public:
 
-float Calc(const std::string& aFileName, float aLaneWidth,
-        int aPoint1x, int aPoint1y, int aPoint2x, int aPoint2y);
+    ImageMeasurer();
+    ~ImageMeasurer();
 
-void SetDebug(bool aIsGui);
+    float Calc(const std::string& aFileName, float aLaneWidth,
+            int aPoint1x, int aPoint1y, int aPoint2x, int aPoint2y);
 
+    void SetDebug(bool aIsGui);
 
 private:
 
-    bool mIsDebug = false;
-    bool mIsGuiDebug = false;
+    struct Impl;
+    std::unique_ptr<Impl> mImpl;
 };
 
