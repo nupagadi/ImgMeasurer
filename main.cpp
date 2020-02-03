@@ -233,7 +233,11 @@ int main(int argc, char** argv)
     }
 
     auto roi = MakeRoi(image);
-    auto withEdges = BuildEdges(roi, 3, 66, 200);
+    auto withEdges = BuildEdges(roi, 3, 66, 150);
+
+    namedWindow("Edges", WINDOW_NORMAL);
+    imshow("Edges", withEdges);
+    waitKey(0);
 
     std::vector<Vec4i> houghLines;
     HoughLinesP(withEdges, houghLines, 5, 1*CV_PI/180, 100, 300, 100);
@@ -250,6 +254,10 @@ int main(int argc, char** argv)
         std::cout << "Can't find road lines." << std::endl;
         return -1;
     }
+
+    namedWindow("Lines", WINDOW_NORMAL);
+    imshow("Lines", linesOnly);
+    waitKey(0);
 
     const Vec4i line34 {0, (int)(h*0.75), w, (int)(h*0.75)};
     Point l34cross, r34cross;
@@ -273,20 +281,22 @@ int main(int argc, char** argv)
     ptsDst.emplace_back(r34cross.x, h);
     ptsDst.emplace_back(r34cross.x, r34cross.y);
 
+    std::cout << "ptsSrc\n";
+    for (auto e : ptsSrc)
+        std::cout << " " << e;
+    std::cout << std::endl;
     Mat homo = findHomography(ptsSrc, ptsDst);
 
     Point2f p1(config.Point1.first, config.Point1.second);
     Point2f p2(config.Point2.first, config.Point2.second);
-    auto distance = CalcDistance(homo, ptsSrc[0], ptsSrc[2], config.LaneWidth, p1, p2);
+    auto distance = CalcDistance(homo, ptsSrc[1], ptsSrc[3], config.LaneWidth, p1, p2);
     std::cout << "D " << distance << std::endl;
 
     Mat warped;
-    warpPerspective(image, warped, homo, Size(image.size().width, image.size().height));
+    warpPerspective(image, warped, homo, image.size());
 
-    namedWindow("Display window", WINDOW_NORMAL);
-    namedWindow("Display window2", WINDOW_NORMAL);
-    imshow("Display window", warped);
-    imshow("Display window2", linesOnly);
+    namedWindow("Warped", WINDOW_NORMAL);
+    imshow("Warped", warped);
     waitKey(0);
 
     return 0;
