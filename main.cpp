@@ -56,7 +56,7 @@ Config MakeConfig(const std::vector<std::string>& aArgs)
         }
     }
 
-    auto intParamProcessor = [&args](auto name, auto& member)
+    auto paramProcessor = [&args](auto name, auto& member)
     {
         auto it = std::find(args.cbegin(), args.cend(), name);
         if (it != args.cend())
@@ -73,16 +73,16 @@ Config MakeConfig(const std::vector<std::string>& aArgs)
     };
 
     auto& params = cfg.Parameters;
-    intParamProcessor("--CannyBlurKernel", params.CannyBlurKernel);
-    intParamProcessor("--CannyThres1", params.CannyThres1);
-    intParamProcessor("--CannyThres2", params.CannyThres2);
-    intParamProcessor("--HoughRho", params.HoughRho);
-    intParamProcessor("--HoughTheta", params.HoughTheta);
-    intParamProcessor("--HoughThres", params.HoughThres);
-    intParamProcessor("--HoughMinLineLength", params.HoughMinLineLength);
-    intParamProcessor("--HoughMaxLineGap", params.HoughMaxLineGap);
-    intParamProcessor("--LinesMinTangent", params.LinesMinTangent);
-    intParamProcessor("--LinesMaxTangent", params.LinesMaxTangent);
+    paramProcessor("--CannyBlurKernel", params.CannyBlurKernel);
+    paramProcessor("--CannyThres1", params.CannyThres1);
+    paramProcessor("--CannyThres2", params.CannyThres2);
+    paramProcessor("--HoughRho", params.HoughRho);
+    paramProcessor("--HoughTheta", params.HoughTheta);
+    paramProcessor("--HoughThres", params.HoughThres);
+    paramProcessor("--HoughMinLineLength", params.HoughMinLineLength);
+    paramProcessor("--HoughMaxLineGap", params.HoughMaxLineGap);
+    paramProcessor("--LinesMinTangent", params.LinesMinTangent);
+    paramProcessor("--LinesMaxTangent", params.LinesMaxTangent);
 
     if (args.size() < 10)
         return cfg;

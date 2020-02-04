@@ -1,8 +1,11 @@
+#pragma once
+
 #include <string>
 #include <memory>
 
-struct ImageMeasurer
+class ImageMeasurer
 {
+public:
     // Defaults.
     struct Parameters
     {
