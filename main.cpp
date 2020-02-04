@@ -15,16 +15,7 @@ struct Config
 
     bool IsGuiDebug = false;
 
-    int CannyBlurKernel {};
-    int CannyThres1 {};
-    int CannyThres2 {};
-    int HoughRho {};
-    int HoughTheta {};
-    int HoughThres {};
-    int HoughMinLineLength {};
-    int HoughMaxLineGap {};
-    int LinesMinTangent {};
-    int LinesMaxTangent {};
+    ImageMeasurer::Parameters Parameters {};
 
     operator bool() const
     {
@@ -79,16 +70,17 @@ Config MakeConfig(const std::vector<std::string>& aArgs)
         return false;
     };
 
-    intParamProcessor("--CannyBlurKernel", cfg.CannyBlurKernel);
-    intParamProcessor("--CannyThres1", cfg.CannyThres1);
-    intParamProcessor("--CannyThres2", cfg.CannyThres2);
-    intParamProcessor("--HoughRho", cfg.HoughRho);
-    intParamProcessor("--HoughTheta", cfg.HoughTheta);
-    intParamProcessor("--HoughThres", cfg.HoughThres);
-    intParamProcessor("--HoughMinLineLength", cfg.HoughMinLineLength);
-    intParamProcessor("--HoughMaxLineGap", cfg.HoughMaxLineGap);
-    intParamProcessor("--LinesMinTangent", cfg.LinesMinTangent);
-    intParamProcessor("--LinesMaxTangent", cfg.LinesMaxTangent);
+    auto& params = cfg.Parameters;
+    intParamProcessor("--CannyBlurKernel", params.CannyBlurKernel);
+    intParamProcessor("--CannyThres1", params.CannyThres1);
+    intParamProcessor("--CannyThres2", params.CannyThres2);
+    intParamProcessor("--HoughRho", params.HoughRho);
+    intParamProcessor("--HoughTheta", params.HoughTheta);
+    intParamProcessor("--HoughThres", params.HoughThres);
+    intParamProcessor("--HoughMinLineLength", params.HoughMinLineLength);
+    intParamProcessor("--HoughMaxLineGap", params.HoughMaxLineGap);
+    intParamProcessor("--LinesMinTangent", params.LinesMinTangent);
+    intParamProcessor("--LinesMaxTangent", params.LinesMaxTangent);
 
     if (args.size() < 10)
         return cfg;
@@ -163,6 +155,7 @@ int main(int argc, char** argv)
     std::vector<std::string> args(argv+1, argv+argc);
     auto config = MakeConfig(args);
     PrintConfig(config);
+
     switch (config.Mode)
     {
     case Config::Error:
@@ -177,6 +170,7 @@ int main(int argc, char** argv)
     {
         im.SetDebug(config.IsGuiDebug);
     }
+    im.SetParameters(config.Parameters);
 
     auto distance = im.Calc(
             config.FileName, config.LaneWidth,

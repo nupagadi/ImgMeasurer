@@ -1,23 +1,24 @@
 #include <string>
 #include <memory>
 
-class ImageMeasurer
+struct ImageMeasurer
 {
     // Defaults.
-    static const int CannyBlurKernel = 3;
-    static const int CannyThres1 = 66;
-    static const int CannyThres2 = 150;
+    struct Parameters
+    {
+        int CannyBlurKernel = 3;
+        int CannyThres1 = 66;
+        int CannyThres2 = 150;
 
-    static const int HoughRho = 5;
-    static const int HoughTheta = 1;
-    static const int HoughThres = 100;
-    static const int HoughMinLineLength = 300;
-    static const int HoughMaxLineGap = 100;
+        int HoughRho = 5;
+        int HoughTheta = 1;
+        int HoughThres = 100;
+        int HoughMinLineLength = 300;
+        int HoughMaxLineGap = 100;
 
-    static const int LinesMinTangent = 1;
-    static const int LinesMaxTangent = 3;
-
-public:
+        int LinesMinTangent = 1;
+        int LinesMaxTangent = 3;
+    };
 
     static void PrintDefaults();
 
@@ -28,6 +29,8 @@ public:
             int aPoint1x, int aPoint1y, int aPoint2x, int aPoint2y);
 
     void SetDebug(bool aIsGui);
+
+    void SetParameters(const Parameters& aParams);
 
 private:
 

@@ -14,18 +14,7 @@ struct ImageMeasurer::Impl
     bool mIsDebug = false;
     bool mIsGuiDebug = false;
 
-    int CannyBlurKernel {};
-    int CannyThres1 {};
-    int CannyThres2 {};
-
-    int HoughRho {};
-    int HoughTheta {};
-    int HoughThres {};
-    int HoughMinLineLength {};
-    int HoughMaxLineGap {};
-
-    int LinesMinTangent {};
-    int LinesMaxTangent {};
+    ImageMeasurer::Parameters Parameters {};
 
     static bool LinesCrossPoint(const Vec4i& aLine1, const Vec4i& aLine2, Point* aCross);
 
@@ -46,36 +35,32 @@ struct ImageMeasurer::Impl
 ImageMeasurer::ImageMeasurer()
     : mImpl(std::make_unique<ImageMeasurer::Impl>())
 {
-    mImpl->CannyBlurKernel = CannyBlurKernel;
-    mImpl->CannyThres1 = CannyThres1;
-    mImpl->CannyThres2 = CannyThres2;
-    mImpl->HoughRho = HoughRho;
-    mImpl->HoughTheta = HoughTheta;
-    mImpl->HoughThres = HoughThres;
-    mImpl->HoughMinLineLength = HoughMinLineLength;
-    mImpl->HoughMaxLineGap = HoughMaxLineGap;
-    mImpl->LinesMinTangent = LinesMinTangent;
-    mImpl->LinesMaxTangent = LinesMaxTangent;
 }
 
 void ImageMeasurer::PrintDefaults()
 {
+    Parameters params {};
     std::cout << "Default parameters:\n";
-    std::cout << "\tCannyBlurKernel " << CannyBlurKernel << std::endl;
-    std::cout << "\tCannyThres1 " << CannyThres1 << std::endl;
-    std::cout << "\tCannyThres2 " << CannyThres2 << std::endl;
+    std::cout << "\tCannyBlurKernel " << params.CannyBlurKernel << std::endl;
+    std::cout << "\tCannyThres1 " << params.CannyThres1 << std::endl;
+    std::cout << "\tCannyThres2 " << params.CannyThres2 << std::endl;
     std::cout << std::endl;
-    std::cout << "\tHoughRho " << HoughRho << std::endl;
-    std::cout << "\tHoughTheta " << HoughTheta << std::endl;
-    std::cout << "\tHoughThres " << HoughThres << std::endl;
-    std::cout << "\tHoughMinLineLength " << HoughMinLineLength << std::endl;
-    std::cout << "\tHoughMaxLineGap " << HoughMaxLineGap << std::endl;
+    std::cout << "\tHoughRho " << params.HoughRho << std::endl;
+    std::cout << "\tHoughTheta " << params.HoughTheta << std::endl;
+    std::cout << "\tHoughThres " << params.HoughThres << std::endl;
+    std::cout << "\tHoughMinLineLength " << params.HoughMinLineLength << std::endl;
+    std::cout << "\tHoughMaxLineGap " << params.HoughMaxLineGap << std::endl;
     std::cout << std::endl;
-    std::cout << "\tLinesMinTangent " << LinesMinTangent << std::endl;
-    std::cout << "\tLinesMaxTangent " << LinesMaxTangent << std::endl;
+    std::cout << "\tLinesMinTangent " << params.LinesMinTangent << std::endl;
+    std::cout << "\tLinesMaxTangent " << params.LinesMaxTangent << std::endl;
 }
 
 ImageMeasurer::~ImageMeasurer() = default;
+
+void ImageMeasurer::SetParameters(const Parameters& aParams)
+{
+    mImpl->Parameters = aParams;
+}
 
 bool ImageMeasurer::Impl::LinesCrossPoint(const Vec4i& aLine1, const Vec4i& aLine2, Point* aCross)
 {
@@ -115,8 +100,8 @@ Mat ImageMeasurer::Impl::BuildEdges(Mat& aOrig)
 {
     cvtColor(aOrig, aOrig, COLOR_BGR2GRAY);
     Mat edges;
-    blur(aOrig, edges, Size(CannyBlurKernel, CannyBlurKernel));
-    Canny(edges, edges, CannyThres1, CannyThres2);
+    blur(aOrig, edges, Size(Parameters.CannyBlurKernel, Parameters.CannyBlurKernel));
+    Canny(edges, edges, Parameters.CannyThres1, Parameters.CannyThres2);
 
     auto withEdges = Mat(aOrig.size(), aOrig.type(), Scalar::all(0));
     aOrig.copyTo(withEdges, edges);
@@ -139,7 +124,7 @@ std::vector<Vec4i> ImageMeasurer::Impl::ExcludeLinesByTangent(
 
         if (a-b == a || a-b == -b)
             continue;
-        if (fabs(a/b) < LinesMinTangent || LinesMaxTangent < fabs(a/b))
+        if (fabs(a/b) < Parameters.LinesMinTangent || Parameters.LinesMaxTangent < fabs(a/b))
             continue;
         result.push_back(aHoughLines[i]);
 
@@ -234,10 +219,11 @@ float ImageMeasurer::Calc(const std::string& aFileName, float aLaneWidth,
         waitKey(0);
     }
 
+    const auto& params = mImpl->Parameters;
     std::vector<Vec4i> houghLines;
     HoughLinesP(withEdges, houghLines,
-            mImpl->HoughRho, mImpl->HoughTheta * CV_PI/180,
-            mImpl->HoughThres, mImpl->HoughMinLineLength, mImpl->HoughMaxLineGap);
+            params.HoughRho, params.HoughTheta * CV_PI/180,
+            params.HoughThres, params.HoughMinLineLength, params.HoughMaxLineGap);
     if (mImpl->mIsDebug)
         std::cout << "hough lines.size() " << houghLines.size() << std::endl;
 
