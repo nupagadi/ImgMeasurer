@@ -198,7 +198,7 @@ float ImageMeasurer::Calc(const std::string& aFileName, float aLaneWidth,
     try {
         image = imread(samples::findFile(aFileName), IMREAD_COLOR);
     }
-    catch (cv::Exception e)
+    catch (cv::Exception& e)
     {
         std::cout << e.what() << std::endl;
     }
