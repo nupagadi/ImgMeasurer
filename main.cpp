@@ -192,6 +192,8 @@ int main(int argc, char** argv)
     case Config::Help:
     case Config::Defaults:
         return 0;
+    default:
+        ;
     }
 
     ImageMeasurer im;

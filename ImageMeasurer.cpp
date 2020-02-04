@@ -155,7 +155,7 @@ std::pair<int,int> ImageMeasurer::Impl::FindRoadLines(
 
     auto comp = [hw = aWidht/2](auto lh, auto rh)
     {
-        if (lh > hw && rh < hw || lh < hw && rh > hw)
+        if ((lh > hw && rh < hw) || (lh < hw && rh > hw))
             return lh > rh;
         return lh < rh;
     };
