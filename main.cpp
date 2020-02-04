@@ -200,10 +200,18 @@ int main(int argc, char** argv)
     }
     im.SetParameters(config.Parameters);
 
-    auto distance = im.Calc(
-            config.FileName, config.LaneWidth,
-            config.Point1.first, config.Point1.second,
-            config.Point2.first, config.Point2.second);
+    float distance;
+    try {
+        distance = im.Calc(
+                config.FileName, config.LaneWidth,
+                config.Point1.first, config.Point1.second,
+                config.Point2.first, config.Point2.second);
+    }
+    catch (std::exception)
+    {
+        std::cout << "runtime error" << std::endl;
+        return -1;
+    }
 
     std::cout << "The distance is " << distance << std::endl;
 
