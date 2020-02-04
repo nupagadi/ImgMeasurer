@@ -14,14 +14,27 @@ struct ImageMeasurer::Impl
     bool mIsDebug = false;
     bool mIsGuiDebug = false;
 
+    int CannyBlurKernel {};
+    int CannyThres1 {};
+    int CannyThres2 {};
+
+    int HoughRho {};
+    int HoughTheta {};
+    int HoughThres {};
+    int HoughMinLineLength {};
+    int HoughMaxLineGap {};
+
+    int LinesMinTangent {};
+    int LinesMaxTangent {};
+
     static bool LinesCrossPoint(const Vec4i& aLine1, const Vec4i& aLine2, Point* aCross);
 
     Mat MakeRoi(const Mat& aOrig);
 
-    Mat BuildEdges(Mat& aOrig, int aBlurKernel, int aCannyThres1, int aCannyThres2);
+    Mat BuildEdges(Mat& aOrig);
 
     std::vector<Vec4i> ExcludeLinesByTangent(
-            const std::vector<Vec4i>& aHoughLines, float aMinTg, float aMaxTg, Mat* aLinesOnly);
+            const std::vector<Vec4i>& aHoughLines, Mat* aLinesOnly);
 
     std::pair<int,int> FindRoadLines(const std::vector<Vec4i>& aLines, int aWidht, int aHeight);
 
@@ -33,6 +46,16 @@ struct ImageMeasurer::Impl
 ImageMeasurer::ImageMeasurer()
     : mImpl(std::make_unique<ImageMeasurer::Impl>())
 {
+    mImpl->CannyBlurKernel = CannyBlurKernel;
+    mImpl->CannyThres1 = CannyThres1;
+    mImpl->CannyThres2 = CannyThres2;
+    mImpl->HoughRho = HoughRho;
+    mImpl->HoughTheta = HoughTheta;
+    mImpl->HoughThres = HoughThres;
+    mImpl->HoughMinLineLength = HoughMinLineLength;
+    mImpl->HoughMaxLineGap = HoughMaxLineGap;
+    mImpl->LinesMinTangent = LinesMinTangent;
+    mImpl->LinesMaxTangent = LinesMaxTangent;
 }
 
 ImageMeasurer::~ImageMeasurer() = default;
@@ -71,13 +94,12 @@ Mat ImageMeasurer::Impl::MakeRoi(const Mat& aOrig)
     return roi;
 }
 
-Mat ImageMeasurer::Impl::BuildEdges(
-        Mat& aOrig, int aBlurKernel, int aCannyThres1, int aCannyThres2)
+Mat ImageMeasurer::Impl::BuildEdges(Mat& aOrig)
 {
     cvtColor(aOrig, aOrig, COLOR_BGR2GRAY);
     Mat edges;
-    blur(aOrig, edges, Size(aBlurKernel, aBlurKernel));
-    Canny(edges, edges, aCannyThres1, aCannyThres2);
+    blur(aOrig, edges, Size(CannyBlurKernel, CannyBlurKernel));
+    Canny(edges, edges, CannyThres1, CannyThres2);
 
     auto withEdges = Mat(aOrig.size(), aOrig.type(), Scalar::all(0));
     aOrig.copyTo(withEdges, edges);
@@ -86,7 +108,7 @@ Mat ImageMeasurer::Impl::BuildEdges(
 }
 
 std::vector<Vec4i> ImageMeasurer::Impl::ExcludeLinesByTangent(
-        const std::vector<Vec4i>& aHoughLines, float aMinTg, float aMaxTg, Mat* aLinesOnly)
+        const std::vector<Vec4i>& aHoughLines, Mat* aLinesOnly)
 {
     std::vector<Vec4i> result;
 
@@ -100,7 +122,7 @@ std::vector<Vec4i> ImageMeasurer::Impl::ExcludeLinesByTangent(
 
         if (a-b == a || a-b == -b)
             continue;
-        if (fabs(a/b) < aMinTg || aMaxTg < fabs(a/b))
+        if (fabs(a/b) < LinesMinTangent || LinesMaxTangent < fabs(a/b))
             continue;
         result.push_back(aHoughLines[i]);
 
@@ -186,7 +208,7 @@ float ImageMeasurer::Calc(const std::string& aFileName, float aLaneWidth,
     }
 
     auto roi = mImpl->MakeRoi(image);
-    auto withEdges = mImpl->BuildEdges(roi, 3, 66, 150);
+    auto withEdges = mImpl->BuildEdges(roi);
 
     if (mImpl->mIsDebug && mImpl->mIsGuiDebug)
     {
@@ -196,12 +218,14 @@ float ImageMeasurer::Calc(const std::string& aFileName, float aLaneWidth,
     }
 
     std::vector<Vec4i> houghLines;
-    HoughLinesP(withEdges, houghLines, 5, 1*CV_PI/180, 100, 300, 100);
+    HoughLinesP(withEdges, houghLines,
+            mImpl->HoughRho, mImpl->HoughTheta * CV_PI/180,
+            mImpl->HoughThres, mImpl->HoughMinLineLength, mImpl->HoughMaxLineGap);
     if (mImpl->mIsDebug)
         std::cout << "hough lines.size() " << houghLines.size() << std::endl;
 
     auto linesOnly = Mat(image.size(), image.type(), Scalar::all(0));
-    auto lines = mImpl->ExcludeLinesByTangent(houghLines, 1, 3, &linesOnly);
+    auto lines = mImpl->ExcludeLinesByTangent(houghLines, &linesOnly);
 
     int li, ri;
     auto w = image.size().width, h = image.size().height;
