@@ -116,11 +116,31 @@ Config MakeConfig(const std::vector<std::string>& aArgs)
 void PrintHelp()
 {
     std::cout << "Usage:\n";
+    std::cout << "./ImgMeasurer --file <path-to-file> --lane <lane-width> "
+       << "--point1 <x> <y> --point2 <x> <y>" << " [--debug [gui]]"
+       << " [OTHER OPTIONS]" << std::endl;
+    std::cout << "./ImgMeasurer --help" << std::endl;
+    std::cout << std::endl << "Examples:\n";
     std::cout << "./ImgMeasurer --file /path/to/file.png --lane 3.75 "
-       << "--point1 <x> <y> --point2 <x> <y>" << std::endl;
+       << "--point1 800 560 --point2 940 1021" << std::endl;
+    std::cout << "./ImgMeasurer --debug --file /path/to/file.png --lane 3.75 "
+       << "--point1 800 560 --point2 940 1021" << std::endl;
+    std::cout << "./ImgMeasurer --file /path/to/file.png --lane 3.75 "
+       << "--point1 800 560 --point2 940 1021" << " --HoughRho 3" << std::endl;
     std::cout << std::endl << "Optional parameters:\n";
     std::cout << "--debug [gui]" << std::endl;
     std::cout << "Show additional info. \"gui\" - for graphical representation." << std::endl;
+    std::cout << std::endl << "Methods custom parameters:\n";
+    std::cout << "--CannyBlurKernel <value>" << std::endl;
+    std::cout << "--CannyThres1 <value>" << std::endl;
+    std::cout << "--CannyThres2 <value>" << std::endl;
+    std::cout << "--HoughRho <value>" << std::endl;
+    std::cout << "--HoughTheta <value>" << std::endl;
+    std::cout << "--HoughThres <value>" << std::endl;
+    std::cout << "--HoughMinLineLength <value>" << std::endl;
+    std::cout << "--HoughMaxLineGap <value>" << std::endl;
+    std::cout << "--LinesMinTangent <value>" << std::endl;
+    std::cout << "--LinesMaxTangent <value>" << std::endl;
 }
 
 void PrintConfig(const Config& aConfig)
