@@ -10,14 +10,14 @@ struct ImageMeasurer
         int CannyThres1 = 66;
         int CannyThres2 = 150;
 
-        int HoughRho = 5;
-        int HoughTheta = 1;
-        int HoughThres = 100;
-        int HoughMinLineLength = 300;
-        int HoughMaxLineGap = 100;
+        float HoughRho = 5;
+        float HoughTheta = 1;
+        float HoughThres = 100;
+        float HoughMinLineLength = 300;
+        float HoughMaxLineGap = 100;
 
-        int LinesMinTangent = 1;
-        int LinesMaxTangent = 3;
+        float LinesMinTangent = 1;
+        float LinesMaxTangent = 3;
 
         void Print() const;
     };

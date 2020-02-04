@@ -64,7 +64,8 @@ Config MakeConfig(const std::vector<std::string>& aArgs)
             it = args.erase(it);
             if (it != args.cend())
             {
-                member = std::stoi(*it);
+                member = static_cast<typename std::remove_reference<decltype(member)>::type>(
+                        std::stof(*it));
                 return true;
             }
         }
