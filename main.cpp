@@ -210,9 +210,10 @@ int main(int argc, char** argv)
                 config.Point1.first, config.Point1.second,
                 config.Point2.first, config.Point2.second);
     }
-    catch (std::exception)
+    catch (std::exception e)
     {
-        std::cout << "runtime error" << std::endl;
+        std::cout << "runtime error: " << std::endl;
+        std::cout << e.what() << std::endl;
         return -1;
     }
 
