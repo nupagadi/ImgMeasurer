@@ -58,6 +58,23 @@ ImageMeasurer::ImageMeasurer()
     mImpl->LinesMaxTangent = LinesMaxTangent;
 }
 
+void ImageMeasurer::PrintDefaults()
+{
+    std::cout << "Default parameters:\n";
+    std::cout << "\tCannyBlurKernel " << CannyBlurKernel << std::endl;
+    std::cout << "\tCannyThres1 " << CannyThres1 << std::endl;
+    std::cout << "\tCannyThres2 " << CannyThres2 << std::endl;
+    std::cout << std::endl;
+    std::cout << "\tHoughRho " << HoughRho << std::endl;
+    std::cout << "\tHoughTheta " << HoughTheta << std::endl;
+    std::cout << "\tHoughThres " << HoughThres << std::endl;
+    std::cout << "\tHoughMinLineLength " << HoughMinLineLength << std::endl;
+    std::cout << "\tHoughMaxLineGap " << HoughMaxLineGap << std::endl;
+    std::cout << std::endl;
+    std::cout << "\tLinesMinTangent " << LinesMinTangent << std::endl;
+    std::cout << "\tLinesMaxTangent " << LinesMaxTangent << std::endl;
+}
+
 ImageMeasurer::~ImageMeasurer() = default;
 
 bool ImageMeasurer::Impl::LinesCrossPoint(const Vec4i& aLine1, const Vec4i& aLine2, Point* aCross)

@@ -19,6 +19,8 @@ class ImageMeasurer
 
 public:
 
+    static void PrintDefaults();
+
     ImageMeasurer();
     ~ImageMeasurer();
 

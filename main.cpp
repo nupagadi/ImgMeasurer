@@ -6,7 +6,7 @@
 
 struct Config
 {
-    enum Mode {Error, Normal, Debug, Help};
+    enum Mode {Error, Normal, Debug, Help, Defaults};
 
     Config::Mode Mode;
     std::string FileName;
@@ -31,6 +31,13 @@ Config MakeConfig(const std::vector<std::string>& aArgs)
     if (it != args.cend())
     {
         cfg.Mode = Config::Help;
+        return cfg;
+    }
+
+    it = std::find(args.cbegin(), args.cend(), "--defaults");
+    if (it != args.cend())
+    {
+        cfg.Mode = Config::Defaults;
         return cfg;
     }
 
@@ -101,6 +108,12 @@ void PrintConfig(const Config& aConfig)
         return;
     }
 
+    if (aConfig.Mode == Config::Defaults)
+    {
+        ImageMeasurer::PrintDefaults();
+        return;
+    }
+
     std::cout << "Determine distance between ("
         << aConfig.Point1.first << ", " << aConfig.Point1.second << ") and ("
         << aConfig.Point2.first << ", " << aConfig.Point2.second << ")" << std::endl;
@@ -113,12 +126,12 @@ int main(int argc, char** argv)
     std::vector<std::string> args(argv+1, argv+argc);
     auto config = MakeConfig(args);
     PrintConfig(config);
-    if (!config)
+    switch (config.Mode)
     {
+    case Config::Error:
         return -1;
-    }
-    if (config.Mode == Config::Help)
-    {
+    case Config::Help:
+    case Config::Defaults:
         return 0;
     }
 
