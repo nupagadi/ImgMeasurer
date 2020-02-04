@@ -18,9 +18,9 @@ struct ImageMeasurer
 
         int LinesMinTangent = 1;
         int LinesMaxTangent = 3;
-    };
 
-    static void PrintDefaults();
+        void Print() const;
+    };
 
     ImageMeasurer();
     ~ImageMeasurer();

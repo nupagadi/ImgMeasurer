@@ -37,22 +37,21 @@ ImageMeasurer::ImageMeasurer()
 {
 }
 
-void ImageMeasurer::PrintDefaults()
+void ImageMeasurer::Parameters::Print() const
 {
-    Parameters params {};
-    std::cout << "Default parameters:\n";
-    std::cout << "\tCannyBlurKernel " << params.CannyBlurKernel << std::endl;
-    std::cout << "\tCannyThres1 " << params.CannyThres1 << std::endl;
-    std::cout << "\tCannyThres2 " << params.CannyThres2 << std::endl;
+    std::cout << "\tCannyBlurKernel " << CannyBlurKernel << std::endl;
+    std::cout << "\tCannyThres1 " << CannyThres1 << std::endl;
+    std::cout << "\tCannyThres2 " << CannyThres2 << std::endl;
     std::cout << std::endl;
-    std::cout << "\tHoughRho " << params.HoughRho << std::endl;
-    std::cout << "\tHoughTheta " << params.HoughTheta << std::endl;
-    std::cout << "\tHoughThres " << params.HoughThres << std::endl;
-    std::cout << "\tHoughMinLineLength " << params.HoughMinLineLength << std::endl;
-    std::cout << "\tHoughMaxLineGap " << params.HoughMaxLineGap << std::endl;
+    std::cout << "\tHoughRho " << HoughRho << std::endl;
+    std::cout << "\tHoughTheta " << HoughTheta << std::endl;
+    std::cout << "\tHoughThres " << HoughThres << std::endl;
+    std::cout << "\tHoughMinLineLength " << HoughMinLineLength << std::endl;
+    std::cout << "\tHoughMaxLineGap " << HoughMaxLineGap << std::endl;
     std::cout << std::endl;
-    std::cout << "\tLinesMinTangent " << params.LinesMinTangent << std::endl;
-    std::cout << "\tLinesMaxTangent " << params.LinesMaxTangent << std::endl;
+    std::cout << "\tLinesMinTangent " << LinesMinTangent << std::endl;
+    std::cout << "\tLinesMaxTangent " << LinesMaxTangent << std::endl;
+    std::cout << std::endl;
 }
 
 ImageMeasurer::~ImageMeasurer() = default;

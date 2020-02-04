@@ -1,3 +1,4 @@
+#include <cstring>
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -157,9 +158,10 @@ void PrintConfig(const Config& aConfig)
         return;
     }
 
+    ImageMeasurer::Parameters d {};
     if (aConfig.Mode == Config::Defaults)
     {
-        ImageMeasurer::PrintDefaults();
+        d.Print();
         return;
     }
 
@@ -168,6 +170,12 @@ void PrintConfig(const Config& aConfig)
         << aConfig.Point2.first << ", " << aConfig.Point2.second << ")" << std::endl;
     std::cout << "Road pic: " << aConfig.FileName << std::endl;
     std::cout << "Lane width: " << aConfig.LaneWidth << " meters" << std::endl << std::endl;
+
+    if (memcmp(&d, &aConfig.Parameters, sizeof(ImageMeasurer::Parameters)))
+    {
+        std::cout << "Parameters have been updated\n";
+        aConfig.Parameters.Print();
+    }
 }
 
 int main(int argc, char** argv)
