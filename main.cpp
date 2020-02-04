@@ -15,6 +15,17 @@ struct Config
 
     bool IsGuiDebug = false;
 
+    int CannyBlurKernel {};
+    int CannyThres1 {};
+    int CannyThres2 {};
+    int HoughRho {};
+    int HoughTheta {};
+    int HoughThres {};
+    int HoughMinLineLength {};
+    int HoughMaxLineGap {};
+    int LinesMinTangent {};
+    int LinesMaxTangent {};
+
     operator bool() const
     {
         return Mode != Error;
@@ -52,6 +63,32 @@ Config MakeConfig(const std::vector<std::string>& aArgs)
             cfg.IsGuiDebug = true;
         }
     }
+
+    auto intParamProcessor = [&args](auto name, auto& member)
+    {
+        auto it = std::find(args.cbegin(), args.cend(), name);
+        if (it != args.cend())
+        {
+            it = args.erase(it);
+            if (it != args.cend())
+            {
+                member = std::stoi(*it);
+                return true;
+            }
+        }
+        return false;
+    };
+
+    intParamProcessor("--CannyBlurKernel", cfg.CannyBlurKernel);
+    intParamProcessor("--CannyThres1", cfg.CannyThres1);
+    intParamProcessor("--CannyThres2", cfg.CannyThres2);
+    intParamProcessor("--HoughRho", cfg.HoughRho);
+    intParamProcessor("--HoughTheta", cfg.HoughTheta);
+    intParamProcessor("--HoughThres", cfg.HoughThres);
+    intParamProcessor("--HoughMinLineLength", cfg.HoughMinLineLength);
+    intParamProcessor("--HoughMaxLineGap", cfg.HoughMaxLineGap);
+    intParamProcessor("--LinesMinTangent", cfg.LinesMinTangent);
+    intParamProcessor("--LinesMaxTangent", cfg.LinesMaxTangent);
 
     if (args.size() < 10)
         return cfg;
